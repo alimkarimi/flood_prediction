@@ -14,6 +14,10 @@ lon_era5 = nc_era5.variables['longitude'][:]
 
 lat_era5 = nc_era5.variables['latitude'][:]
 
+time_era5 = nc_era5.variables['time'][:]
+
+time = nc_era5.variables['time'] # this looks like it includes metadata, so it is different from time_era5 variable.
+
 cartesian_product_lon_lat = np.array(list(itertools.product(lat_era5, lon_era5))) # this variable is a list of all the 
 # coordinates present in the ERA5 dataset. As a reminder, this can be done by taking the cartesian product of the list
 # of longs and list of lats. (A x B , where x is the cartesian product, will generate the set of all ordered pairs
@@ -21,6 +25,7 @@ cartesian_product_lon_lat = np.array(list(itertools.product(lat_era5, lon_era5))
 
 
 if __name__ == "__main__":
-    print(len(lon_era5))
-    print(len(lat_era5))
-    print(cartesian_product_lon_lat)
+    print(f"num longitude (x or cols) steps: {len(lon_era5)}")
+    print(f"num latitude (y or row) steps: {len(lat_era5)}")
+    print(f"num time steps: {len(time_era5)}")
+    print(f"shape of cartesian product of x X y: {cartesian_product_lon_lat.shape}")
