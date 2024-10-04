@@ -22,6 +22,7 @@ def appendObservationalData(data):
     """
     Pass in data in the order time_idx, row_idx, col_idx, feature_vector, label
     """
+    return None
     
 
 if __name__ == "__main__":
