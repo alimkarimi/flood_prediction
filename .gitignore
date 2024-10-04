@@ -5,3 +5,5 @@
 *.nc
 
 *__pycache__*
+
+data/
