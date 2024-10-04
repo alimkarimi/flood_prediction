@@ -1,6 +1,6 @@
 import numpy as np
-from open_era5 import lon_era5, lat_era5, time_era5, time, cartesian_product_lon_lat
-from open_flood_obs import gt_kenya
+from .open_era5 import lon_era5, lat_era5, time_era5, time, cartesian_product_lon_lat
+from .open_flood_obs import gt_kenya
 import cftime
 from netCDF4 import Dataset, num2date, date2num
 import pandas as pd
