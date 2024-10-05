@@ -60,14 +60,29 @@ class SVM_model():
         accuracy = accuracy_score(y_true = self.y_test, y_pred = self.y_pred)
         print(f"Accuracy for SVM trained on {self.X_train.shape[0]} data points is {accuracy}")
 
+        true_pos_counter = 0
+        false_pos_counter = 0
+        false_negative_counter = 0
+        # compute precision (true_pos / true_pos + false_neg)
+        for (pred, gt) in zip(self.y_pred, self.y_test):
+            if gt == 1 and pred == 0:
+                false_negative_counter += 1
+
+            if gt == 1 and pred == 1:
+                true_pos_counter+= 1
+            
+            if gt == 0 and pred == 1:
+                false_pos_counter +=1
         
+        if true_pos_counter + false_pos_counter == 0:
+            print("Cannot compute precision because there are no TPs or FPs in dataset")
+        else:
+            print(f"Precision is TP / (TP + FP) which is {true_pos_counter / (true_pos_counter + false_pos_counter)}")
 
-
-
-
-
-        
-
+        if true_pos_counter + false_negative_counter == 0:
+            print("Cannot generate recall because TP + FN = 0")
+        else:
+            print(f"Recall is TP / (TP + FN) which is {true_pos_counter / (true_pos_counter + false_negative_counter)}")
 
 
 if __name__ == "__main__":
