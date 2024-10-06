@@ -13,8 +13,8 @@ print(df_pos_neg)
 
 class SVM_model():
     def __init__(self, data = df_pos_neg):
-        self.train_ratio = 0.8
-        self.test_ratio = 0.2
+        self.train_ratio = 0.5
+        self.test_ratio = 0.5
         X = data['feature_vector']
         y = data['label'] # these are either 'tp' or 'tn'. use LabelEncoder() to convert them to numerical format
 
@@ -22,13 +22,11 @@ class SVM_model():
         y = le.fit_transform(y)
         print('this is y!!!', y)
         # handle train and test split:
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=self.test_ratio, random_state=42)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=self.test_ratio, random_state=None)
 
         # move X_train, X_test to numpy arrays. They seem to be in an awkward format for using pre-processing ops. 
         self.X_train = np.vstack(self.X_train.to_list())
         self.X_test = np.vstack(self.X_test.to_list())
-
-
 
 
     def fit_svm(self):
@@ -41,8 +39,8 @@ class SVM_model():
         # print("before standard scalar: ", self.X_train)
         # print("shape of values", self.X_train.shape)
 
-        scaler = StandardScaler()
-        transformed_X_train = scaler.fit_transform(self.X_train)
+        self.scaler = StandardScaler()
+        transformed_X_train = self.scaler.fit_transform(self.X_train)
         #print("after standard scaler", transformed_X_train)
         print(self.y_train)
 
@@ -50,12 +48,15 @@ class SVM_model():
     
     def test_svm(self):
         """
-        This function will test the fitted SVM model and compute the accuracy of predictions (correct predictions / total predictions)
+        This function will test the fitted SVM model and compute the accuracy of predictions (correct predictions / total predictions).
+
+        We need to transform X_test using the transformation used for X_train
         """
 
+        self.X_test = self.scaler.transform(self.X_test)
         self.y_pred = self.svm.predict(self.X_test)
-        print(self.y_pred)
-        print(self.y_test)
+        print("Precitions on X_test:", self.y_pred)
+        print("Ground truth data", self.y_test)
 
         accuracy = accuracy_score(y_true = self.y_test, y_pred = self.y_pred)
         print(f"Accuracy for SVM trained on {self.X_train.shape[0]} data points is {accuracy}")
