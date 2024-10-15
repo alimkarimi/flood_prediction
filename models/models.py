@@ -7,16 +7,18 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
-
 from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+
 
 from dataloading_scripts.feature_builder import getFeatures, df_pos_neg
 
-print(df_pos_neg)
+import os
+
 
 class statistical_model():
     def __init__(self, data = df_pos_neg, model_type = 'svm'):
-        
+        self.num_cores = os.cpu_count()
         self.model_type = model_type
         self.test_ratio = 0.3
         self.train_ration = 1 - self.test_ratio
@@ -27,7 +29,7 @@ class statistical_model():
         y = le.fit_transform(y)
         print('this is y!!!', y)
         # handle train and test split:
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=self.test_ratio, random_state=None)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=self.test_ratio, random_state=42)
 
         # move X_train, X_test to numpy arrays. They seem to be in an awkward format for using pre-processing ops. 
         self.X_train = np.vstack(self.X_train.to_list())
@@ -39,9 +41,12 @@ class statistical_model():
         This function instatiates SVM model with default parameters and fits to training data
         """
         if self.model_type == 'svm':
-            self.model = SVC() # instantiate SVM model
+            self.model = SVC(n_jobs = self.num_cores) # instantiate SVM model. Specify n_jobs to be the number of cores available on 
+            # machine's CPU. The goal of this is to parallelize the training.
         if self.model_type == 'xgb':
             self.model = XGBClassifier()
+        if self.model_type == 'rf':
+            self.model = RandomForestClassifier()
 
         self.scaler = StandardScaler() # instantiate scaler object to transform training features to have 0 mean and 1 variance.
         transformed_X_train = self.scaler.fit_transform(self.X_train) # fit and transform training data using scaler object
@@ -66,7 +71,7 @@ class statistical_model():
             print("Ground truth data", self.y_test)
 
         accuracy = accuracy_score(y_true = self.y_test, y_pred = self.y_pred)
-        print(f"Accuracy for SVM trained on {self.X_train.shape[0]} data points is {accuracy}")
+        print(f"Accuracy for {self.model_type} trained on {self.X_train.shape[0]} data points is {accuracy}")
 
         true_pos_counter = 0
         false_pos_counter = 0
@@ -99,9 +104,9 @@ class statistical_model():
 
 
 if __name__ == "__main__":
-    
 
-    model = statistical_model(data = df_pos_neg, model_type='xgb')
+
+    model = statistical_model(data = df_pos_neg, model_type='rf')
 
     model.fit_model()
     model.test_model()
