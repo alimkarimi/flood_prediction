@@ -23,7 +23,7 @@ predictor_vars = ['slt', 't2m', 'dl', 'lai_hv', 'lai_lv', 'tp']
 # print(nc_era5.variables['tp'].long_name)
 #print(nc_era5)
 
-# get 24 true positive indices (for 1996)
+# get true positive indices (for the .nc file specified in open_era5.py)
 target_cube = np.zeros((len(time_era5), len(lat_era5), len(lon_era5)))
 target_cube = append_flood_observations(target_cube, ground_truth_df=gt_kenya)
 print(f"Target cube has {int(np.sum(target_cube))} observations in total")
@@ -33,7 +33,7 @@ print(f"Target cube has dimensions {target_cube.shape}")
 df_pos = createBaseDataFrame()
 df_neg = createBaseDataFrame()
 
-def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, num_neg_samples = 24, pos_feature_extraction=True,
+def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, num_neg_samples = int(1e6), pos_feature_extraction=True,
                 ):
     """
 
