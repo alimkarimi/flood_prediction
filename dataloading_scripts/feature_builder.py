@@ -33,7 +33,9 @@ print(f"Target cube has dimensions {target_cube.shape}")
 df_pos = createBaseDataFrame()
 df_neg = createBaseDataFrame()
 
-def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, num_neg_samples = int(1e6), pos_feature_extraction=True,
+np.random.seed(0)
+
+def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, num_neg_samples = 1000000, pos_feature_extraction=True,
                 ):
     """
 
