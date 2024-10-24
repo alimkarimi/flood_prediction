@@ -6,11 +6,18 @@ from dataloading_scripts.init_db import createBaseDataFrame, appendObservational
 
 # get the features for 1996
 """
-This script will get feature vectors (6d) for true positives and true negatives. The goal is to 
-understand if TP and TNs cluster nicely in some sort of dim reduction scheme like PCA, UMAP, etc.
+This script will get feature vectors (6d) for all true positives and a sample of true negatives. 
 
-If they do, then, I think this validates that there is a nice decision boundary that a model like 
-SVM can find/learn.
+Currently, the number of negative samples is controlled by the num_neg_samples argument to get_features().
+
+There is only an option to sample all of the positive samples. One cannot sample a subset currently.
+
+The argument pos_feature_extraction is set to True. If True, the function returns a dataframe with positive 
+samples. If False, the function returns a dataframe with negative samples. In both cases, the function returns a
+dataframe with the label of the sampled feature.
+
+The features are sampled at one time point and one space point. The spatiotemporal nature of the sample is something
+that can be extended in the future.
 """
 
 predictor_vars = ['slt', 't2m', 'dl', 'lai_hv', 'lai_lv', 'tp']
