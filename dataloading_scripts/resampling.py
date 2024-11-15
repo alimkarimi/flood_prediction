@@ -1,132 +1,130 @@
-import xarray as xr
-from dataloading_scripts.open_era5 import nc_era5
-from dataloading_scripts.open_dtm import open_dtm
-
-import rasterio
-from rasterio.enums import Resampling
-
+from dataloading_scripts.open_era5 import nc_era5, cartesian_product_lon_lat
+import os
 import numpy as np
-
+import rasterio
 import matplotlib.pyplot as plt
 
-from PIL import Image
+
+""""
+This program will read all dtm .tif files that have SRTM data, merge them into one
+contiguous 2d array. Then, resample using a 300 x 300 px window (corresponding to 0.25 x 0.25)
+degrees.
+
+This program also cleans up some spurious values of the SRTM data.
+"""
+
+# Create list of SRTM dtm files:
+srtm_files_root = '/Users/alim/Documents/ccai_floods/flood_prediction/data/srtm/'
+srtm_file_list = os.listdir(srtm_files_root)
+
+# merge DTM tifs into one 2d array:
+e_list = []
+n_s_list = []
+
+super_arr = np.zeros((12 * 300 * 4, 10 * 300 * 4))
+empty_arr = np.zeros((12,10))
+
+for fn in srtm_file_list:
+    
+    # logic to figure out where each srtm tif file belongs in the larger grid
+    e_list.append(int(fn[6:8]))
+    
+    if fn[0] == 'n':
+        n_s_list.append(int(fn[1:3]))
+
+    if fn[0] == 's':
+        n_s_list.append(-int(fn[1:3]))
+
+    #print(f"last appended row: {n_s_list[-1]} while last appended col is {e_list[-1]}")
+    #print(f"mapped row should be {(n_s_list[-1] - 5 ) * -1} and col should be {e_list[-1] - 33}")
+    mapped_ns = (n_s_list[-1] - 5 ) * -1 # row
+    mapped_e = e_list[-1] -33           # column
+    empty_arr[mapped_ns, mapped_e] = 1
+
+    # now convert mapped_ns and mapped_e to 1200 x 1200 box.
+    mapped_ns_super = mapped_ns * 300 * 4
+    mapped_e_super = mapped_e * 300 * 4
+    #print(mapped_ns_super, mapped_ns_super+(1200), mapped_e_super, mapped_e_super+(1200))
+
+    # open dtm and place dtm data into the right part of the super_arr
+    with rasterio.open(srtm_files_root + fn) as dataset:
+        
+        extent = (dataset.bounds.left, dataset.bounds.right, dataset.bounds.bottom, dataset.bounds.top)
+        print(extent)
+    
+        extent_left = np.round(dataset.bounds.left)
+        extent_right = np.round(dataset.bounds.right)
+        extent_top = np.round(dataset.bounds.top)
+        extent_bottom = np.round(dataset.bounds.bottom)
+
+        # Define the bounds for the current 1 x 1-degree window
+        lat1, lat2 = extent_top, extent_bottom # ex: 2, 1.75
+        lon1, lon2 = extent_left, extent_right # ex: 40, 40.25
+
+        # Convert the lat/lon bounds to pixel indices
+        row_min, col_min = dataset.index(lon1, lat1)  # Upper-left corner
+        row_max, col_max = dataset.index(lon2, lat2)  # Lower-right corner
+
+        window = ((row_min, row_max), (col_min, col_max))
+        windowed_data = dataset.read(1, window=window)  # Reads only the specified window in the 1st band
+        print(windowed_data.shape)
+
+        # insert windowed data into correct location of super_arr:
+        super_arr[mapped_ns_super : mapped_ns_super + 1200, mapped_e_super : mapped_e_super + 1200] = windowed_data
 
 
+# clean up spurious values in DTM:
+# for some reason, 0.03% of DTM values are -32767.0. Rewrite those to 0
+super_arr[super_arr == -32767.0] = 0 # this can be improved - some of these illogical elevations are in mountainous areas.
 
-# steps to reproject DTM to common grid.
+# Now, resample super_arr to match grid resolution of climate data from netcdf
+resampled_arr = np.zeros((41,35))
 
-# 1. check that DTM and climate data exist in common projection
-# nc_era5 is in lat / long
-dtm = open_dtm('../dtm_data/MeanElevation_Kenya.tif', verbose=False)
-print(dtm.crs) # this is EPSG: 4326
+resampled_row_counter = 0
+resampled_col_counter = 0
+for c, coord in enumerate(cartesian_product_lon_lat):
+    # print(f"The latitude is {coord[0]} and the longitude is {coord[1]}")
+    # print(f"This means we want to get pixels between latitudes 5 - 0.125 and 5 + 0.125, or {coord[0] - 0.125} and {coord[0] + .125}")
+    # print(f"This also means we want to get pixels between longitudes {coord[1] - 0.125} and {coord[1] + 0.125}")
 
-# 2. if not, reproject to common projection
-# in a common projection
-# 3. trim DTM to bounds of climate data
-# get extents of DTM: 
+    # 300 pixels is one degree. 150 pixels is half a degree. 75 pixels is a quarter of a degree.
 
-left = dtm.bounds[0]
-bottom = dtm.bounds[1]
+    # to get the pixel centered at exactly 5 lat, 34 long, subtract current lat (5) from max lat (6) (this is 1). 
+    # also, subtract min long from current long (34 - 33) (this is 1)
+    # This means that the coordinate 5 lat, 34 long is 1 degree by 1 degree in to the image/dtm. 
+    # To convert this to pixels, multiply this 1 degree by 1200. This is because our dtm data is natively in 3 arcseconds and there are 
+    # 3600 arc seconds in a degree. 
+    # So, getting the center pixel at 5 lat, 34 long means indexing into super_arr[1 * 1200, 1 * 1200].
+    # To get the surround pixels and take the average, we can perform an operation like: 
+    # np.mean(super_arr[1 * 1200 - 150 : 1 * 1200 + 150, 1 * 1200 - 150 : 1 * 1200 + 150])
+    # save that result of np.mean() to to the correct index of resampled_arr
+    
+    diff_lat = 6 - coord[0] # 6 - coord[0] because 6 is the latitude that corresponds to the top row of data
+    diff_lon = coord[1] - 33 # coord[1] - 33 because 33 is the longitude that corresponds to the first column of the data
+    # print(diff_lat, diff_lon)
 
-right = dtm.bounds[2]
-top = dtm.bounds[3]
+    center_px_lat = int(diff_lat * 1200)
+    center_px_lon = int(diff_lon * 1200)
+    # print(f"Center Pixel is {center_px_lat, center_px_lon}")
 
-print(left, bottom, right, top)
+    
+    # grab window around center pixel. Window size is 300 by 300. Consider adding filter if poor results in model
+    window = super_arr[center_px_lat - 150 : center_px_lat + 150, center_px_lon - 150 : center_px_lon + 150]
+    window_mean = np.mean(window)
 
-# get extents of nc_era5 spatial data:
-print(nc_era5.variables['latitude'][:].min())
-left_nce = nc_era5.variables['longitude'][:].min()
-bottom_nce = nc_era5.variables['latitude'][:].min()
-
-right_nce = nc_era5.variables['longitude'][:].max()
-top_nce = nc_era5.variables['latitude'][:].max()
-print(left_nce, bottom_nce, right_nce, top_nce)
-
-#print(dir(dtm))
-print(dtm.statistics(1), dtm.units, dtm.scales, dtm.res, dtm.crs,)
-
-print(dtm.index(left, bottom))
-print(dtm.index(right, top))
-print(dtm.index(left, top))
-
-print(dtm.width, dtm.height, dtm.shape)
-
-# Access the latitude and longitude variables
-latitudes = nc_era5.variables['latitude'][:]
-longitudes = nc_era5.variables['longitude'][:]
-
-# Calculate the resolution as the difference between consecutive points
-lat_res_era5 = abs(latitudes[1] - latitudes[0])
-lon_res_era5 = abs(longitudes[1] - longitudes[0])
-
-print(f"Latitude resolution: {lat_res_era5} degrees")
-print(f"Longitude resolution: {lon_res_era5} degrees")
-# 4 - try to resample with a factor of source / target (source is the dtm, target is the climate ERA5 data)
-
-scale_factor = dtm.res[0] / lat_res_era5
-with rasterio.open("./dtm_data/MeanElevation_Kenya.tif") as dataset:
-
-    # resample data to target shape
-    data = dataset.read(
-        out_shape=(
-            dataset.count,
-            int(dataset.height * scale_factor),
-            int(dataset.width * scale_factor)
-        ),
-        resampling=Resampling.bilinear
-    )
-
-    # scale image transform
-    transform = dataset.transform * dataset.transform.scale(
-        (dataset.width / data.shape[-1]),
-        (dataset.height / data.shape[-2])
-    ) 
-    print(data)
-    print(type(data))
-    print(data.shape)
-    print(np.max(data), np.min(data), np.std(data))
-
-        # Define new metadata for the output file
-    new_meta = dataset.meta.copy()
-    new_meta.update({
-        "height": data.shape[1],
-        "width": data.shape[2],
-        "transform": transform
-    })
-
-    # Write resampled data to a new file
-    with rasterio.open("./dtm_data/resampled_example.tif", "w", **new_meta) as dest:
-            dest.write(data)
-
-# open resampled_example.tif:
-
-dtm_resampled = open_dtm('../dtm_data/resampled_example.tif', verbose=False)
-print(dtm_resampled.crs)
-print(dtm_resampled.statistics(1), dtm_resampled.units, dtm_resampled.scales, dtm_resampled.res, dtm_resampled.crs,)
-
-print(dtm_resampled.index(left, bottom))
-print(dtm_resampled.index(right, top))
-print(dtm_resampled.index(left, top))
-
-arr = Image.open('./dtm_data/resampled_example.tif')
-# Convert to numpy array for processing
-arr_np = np.array(arr)
-
-# Optionally, you can define vmin and vmax based on your data
-vmin = np.min(arr_np)  # Minimum elevation value
-vmax = np.max(arr_np)  # Maximum elevation value
-
-# Create a figure and axis
-plt.figure(figsize=(8, 6))
-# Display the image with a suitable colormap for elevation
-img_display = plt.imshow(arr_np, cmap='terrain', vmin=vmin, vmax=vmax)
-
-# Add a color bar
-cbar = plt.colorbar(img_display)
-cbar.set_label('Elevation (meters)')  # Set the label for the color bar
-
-# Save the figure
-plt.savefig('./dtm_data/resampled_displayed.jpg')
-
-# Show the plot (optional)
+    # write to resampled_arr:
+    # print(f"Writing to index {resampled_row_counter, resampled_col_counter}")
+    resampled_arr[resampled_row_counter, resampled_col_counter] = window_mean
+    
+    if resampled_col_counter != 35:
+        resampled_col_counter += 1
+    if resampled_col_counter == 35:
+        resampled_col_counter = 0
+        resampled_row_counter += 1
+    
+plt.imshow(resampled_arr, cmap = 'terrain',)
+plt.colorbar(label='Elevation (m)')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+plt.title('Digital Terrain Model - Downsampled')
 plt.show()
