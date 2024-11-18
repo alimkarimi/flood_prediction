@@ -1,5 +1,5 @@
 # Flood Prediction
-Flood prediction is a difficult problem. This repo represents code for the 2024 NeurIPS workshop proposal paper accepted to the workshop "Tackling Climate Change with ML"
+Flood prediction is a difficult problem. This repo represents code for the 2024 NeurIPS workshop proposal paper accepted to the workshop "Tackling Climate Change with ML". Hammed A Akande, Valerie Brosnon, David Quispe, Nicole Mong’are, and Asbina Baral have also contributed to the proposal. 
 
 Flood prediction is difficult because there are very sparse true positive observations. The proposal paper outlines a method to first establish a baseline in Kenya 
 and then to leverage pretrained models to generate more training points. With these additional training points, deep learning theory suggests that higher order models 
@@ -27,6 +27,8 @@ Recall is TP / (TP + FN) which is 0.6085790884718498
 | Random Forest | 0.9962897321650407 | 0.7442622950819672   | 0.6085790884718498   |
 
 # Results with DTM data
+All models trained on about one million data points (~700k train, ~300k test):
+
 
 Accuracy for XGBoost on test dataset is (total correct / total predictions) is 0.9962864194259023
 Precision is TP / (TP + FP) which is 0.7017353579175705
