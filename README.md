@@ -25,3 +25,19 @@ Recall is TP / (TP + FN) which is 0.6085790884718498
 | SVM      | 0.993821741506965  | Cannot compute       | 0.0                  |
 | XGBoost  | 0.9954880492935584 | 0.6576158940397351   | 0.5402611534276387   |
 | Random Forest | 0.9962897321650407 | 0.7442622950819672   | 0.6085790884718498   |
+
+# Results with DTM data
+
+Accuracy for XGBoost on test dataset is (total correct / total predictions) is 0.9962864194259023
+Precision is TP / (TP + FP) which is 0.7017353579175705
+Recall is TP / (TP + FN) which is 0.693833780160858
+
+Accuracy for rf trained on test dataset (total correct / total predictions) is 0.9968661487751147
+Precision is TP / (TP + FP) which is 0.7506819421713039
+Recall is TP / (TP + FN) which is 0.7378016085790885
+
+| Model    | Accuracy          | Precision            | Recall               |
+| -------- | ----------------- | -------------------- | -------------------- |
+| SVM      |   |       |                  |
+| XGBoost  | 0.9962864194259023 |  0.7017353579175705  |  0.693833780160858  |
+| Random Forest | 0.9968661487751147 |  0.7506819421713039  | 0.7378016085790885   |
