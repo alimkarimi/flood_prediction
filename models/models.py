@@ -35,7 +35,6 @@ class statistical_model():
         self.X_train = np.vstack(self.X_train.to_list())
         self.X_test = np.vstack(self.X_test.to_list())
 
-
     def fit_model(self, verbose=True):
         """
         This function instatiates SVM model with default parameters and fits to training data
@@ -104,9 +103,7 @@ class statistical_model():
 
 
 if __name__ == "__main__":
-
-
-    model = statistical_model(data = df_pos_neg, model_type='rf')
+    model = statistical_model(data = df_pos_neg, model_type='xgb')
 
     model.fit_model()
     model.test_model()
