@@ -9,6 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
 
 
 from dataloading_scripts.feature_builder import getFeatures, df_pos_neg
@@ -17,7 +18,7 @@ import os
 
 
 class statistical_model():
-    def __init__(self, data = df_pos_neg, model_type = 'svm'):
+    def __init__(self, data = df_pos_neg, model_type = 'rf'):
         self.num_cores = os.cpu_count()
         self.model_type = model_type
         self.test_ratio = 0.3
@@ -40,7 +41,7 @@ class statistical_model():
         This function instatiates SVM model with default parameters and fits to training data
         """
         if self.model_type == 'svm':
-            self.model = SVC(n_jobs = self.num_cores) # instantiate SVM model. Specify n_jobs to be the number of cores available on 
+            self.model = SVC() # instantiate SVM model. Specify n_jobs to be the number of cores available on 
             # machine's CPU. The goal of this is to parallelize the training.
         if self.model_type == 'xgb':
             self.model = XGBClassifier()
@@ -54,7 +55,7 @@ class statistical_model():
         self.model.fit(X = transformed_X_train, y = self.y_train) # find optimal SVM parameters using the given hyperparameters
         if verbose:
             print(f"Done training {self.model_type}")
-    def test_model(self, verbose=False):
+    def test_model(self, create_report=True, verbose=False):
         """
         This function will test the fitted SVM model and compute the accuracy of predictions (correct predictions / total predictions).
 
@@ -101,9 +102,13 @@ class statistical_model():
         else:
             print(f"Recall is TP / (TP + FN) which is {true_pos_counter / (true_pos_counter + false_negative_counter)}")
 
+        if create_report:
+            report = classification_report(self.y_test, self.y_pred, target_names=['no flood', 'flood'])
+            print(report)
+
 
 if __name__ == "__main__":
-    model = statistical_model(data = df_pos_neg, model_type='xgb')
+    model = statistical_model(data = df_pos_neg, model_type='svm')
 
     model.fit_model()
     model.test_model()
