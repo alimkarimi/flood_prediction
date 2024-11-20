@@ -13,7 +13,7 @@ degrees.
 This program also cleans up some spurious values of the SRTM data.
 """
 
-def resample_dtm(plot=False):
+def resample_dtm(plot=True):
     # Create list of SRTM dtm files:
     srtm_files_root = '../flood_prediction/data/srtm/'
     srtm_file_list = os.listdir(srtm_files_root)
@@ -124,7 +124,7 @@ def resample_dtm(plot=False):
             resampled_row_counter += 1
     
     if plot:
-        plt.imshow(resampled_arr, cmap = 'terrain',)
+        plt.imshow(resampled_arr, cmap = 'terrain', extent=(34, 42.5, 5, -5))
         plt.colorbar(label='Elevation (m)')
         plt.xlabel('Longitude')
         plt.ylabel('Latitude')
