@@ -120,7 +120,7 @@ if __name__ == '__main__':
     
     print("API Key: " + apiKey + "\n")
     
-    datasetName = "gls_all"
+    datasetName = "SRTM Void Filled" #"gls_all"
     
     spatialFilter =  {'filterType' : "mbr",
                       'lowerLeft' : {'latitude' : -5, 'longitude' : 34}, # lat is north/south, long is east/west
