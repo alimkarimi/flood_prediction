@@ -5,7 +5,7 @@ Flood prediction is difficult because there are very sparse true positive observ
 and then to leverage pretrained models to generate more training points. With these additional training points, deep learning theory suggests that higher order models 
 (i.e, neural networks) can be more appropriately used.
 
-# How to gather climate features:
+# How to gather climate and elevation features:
 Climate features from ERA5 were downloaded using the script at flood_prediction/dataloading_scripts/download_era5.py . Kick that off by:
 
 `cd flood_prediction`
@@ -22,6 +22,8 @@ To do this, run:
 Climate features have now been downloaded, but if one wants to incorporate elevation data into the predictors, it will require getting that data from the USGS Earth Explorer. To do this, follow instruction on this YouTube video: https://www.youtube.com/watch?v=IdilpusxTHY&t=246s . Point the download to a folder called `flood_prediction/data/srtm` . The download should have a latitude bound of -5 to +5 and a longitude bound of 34 to 42.5. 
 
 Once these steps have been completed, we are ready to prep features and run models.
+
+# How to run statistical models:
 
 Running `python3 -m models.models` will kick off the statistical models (either XGBoost or RF). The actual model has to be specified in the code. We plan to add command line arguments for ease of use in the future. 
 
