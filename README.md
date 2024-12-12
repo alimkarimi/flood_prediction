@@ -5,6 +5,34 @@ Flood prediction is difficult because there are very sparse true positive observ
 and then to leverage pretrained models to generate more training points. With these additional training points, deep learning theory suggests that higher order models 
 (i.e, neural networks) can be more appropriately used.
 
+# How to gather climate features:
+Climate features from ERA5 were downloaded using the script at flood_prediction/dataloading_scripts/download_era5.py . Kick that off by:
+
+`cd flood_prediction`
+`python3 -m dataloading_scripts.download_era5`
+
+This will download relevant climate features, however, each year will be in a separate .nc file.
+
+We want to aggegate all the files from 1996 - 2018 into single file to reduce management overhead.
+
+To do this, run:
+
+`python3 -m dataloading_scripts.merge_era5`
+
+Climate features have now been downloaded, but if one wants to incorporate elevation data into the predictors, it will require getting that data from the USGS Earth Explorer. To do this, follow instruction on this YouTube video: https://www.youtube.com/watch?v=IdilpusxTHY&t=246s . Point the download to a folder called `flood_prediction/data/srtm` . The download should have a latitude bound of -5 to +5 and a longitude bound of 34 to 42.5. 
+
+Once these steps have been completed, we are ready to prep features and run models.
+
+Running `python3 -m models.models` will kick off the statistical models (either XGBoost or RF). The actual model has to be specified in the code. We plan to add command line arguments for ease of use in the future. 
+
+Note that if one wants to incorporate elevation features or adjust the number of negatives (non-flood examples or true negatives in the number of samples), one has to adjust the function definition in flood_prediction/dataloading_scripts/feature_builder.py .
+
+Specifically, line 49 has the function defintion: 
+```def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, append_dtm = True, num_neg_samples = 1000000, pos_feature_extraction=True):```
+
+Adjust `append_dtm` to `True` if you want to incorporate DTM features. This will automatically resample SRTM data to the ERA5 grid in the background. 
+
+Adjust `num_neg_samples` to you desired choice of negative samples. The paper results were run with 1 million negative samples. 
 
 All models trained on about one million data points (~700k train, ~300k test):
 
@@ -42,6 +70,5 @@ Recall is TP / (TP + FN) which is 0.7378016085790885
 
 | Model    | Accuracy          | Precision            | Recall               |
 | -------- | ----------------- | -------------------- | -------------------- |
-| SVM      |   |       |                  |
 | XGBoost  | 0.9962864194259023 |  0.7017353579175705  |  0.693833780160858  |
 | Random Forest | 0.9968661487751147 |  0.7506819421713039  | 0.7378016085790885   |
