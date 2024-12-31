@@ -24,6 +24,9 @@ Climate features have now been downloaded, but if one wants to incorporate eleva
 Once these steps have been completed, we are ready to prep features and run models.
 
 # How to gather ground truth (flood / no flood per grid cell)
+From the Darthmouth Flood Observatory, download the Flood Archive from https://floodobservatory.colorado.edu/temp/FloodArchive.txt . Place this file in `data/gt/`
+
+The model building code (in the next section) will automatically use this for ground truth.
 
 # How to run statistical models:
 
