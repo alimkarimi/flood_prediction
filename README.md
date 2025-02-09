@@ -19,7 +19,7 @@ To do this, run:
 
 `python3 -m dataloading_scripts.merge_era5`
 
-Climate features have now been downloaded, but if one wants to incorporate elevation data into the predictors, it will require getting that data from the USGS Earth Explorer. To do this, follow instruction on this YouTube video: https://www.youtube.com/watch?v=IdilpusxTHY&t=246s . Point the download to a folder called `flood_prediction/data/srtm` . The download should have a latitude bound of -5 to +5 and a longitude bound of 34 to 42.5. 
+Climate features have now been downloaded, but if one wants to incorporate elevation data into the predictors, it will require getting that data from the USGS Earth Explorer. To do this, follow instruction on this YouTube video: https://www.youtube.com/watch?v=IdilpusxTHY&t=246s . Point the download to a folder called `flood_prediction/data/srtm` . The download should have a latitude bound of -5 to +5 and a longitude bound of 34 to 42.5. Make sure to download the data the 3arcsecond resolution data.
 
 Once these steps have been completed, we are ready to prep features and run models.
 
