@@ -76,6 +76,8 @@ class statistical_model():
         true_pos_counter = 0
         false_pos_counter = 0
         false_negative_counter = 0
+        precision = 0
+        recall = 0
 
         # compute precision/recall metrics (true_pos / true_pos + false_neg). 
 
@@ -95,12 +97,19 @@ class statistical_model():
         if true_pos_counter + false_pos_counter == 0:
             print("Cannot compute precision because there are no TPs or FPs in dataset")
         else:
+            precision = true_pos_counter / (true_pos_counter + false_pos_counter)
             print(f"Precision is TP / (TP + FP) which is {true_pos_counter / (true_pos_counter + false_pos_counter)}")
+            
 
         if true_pos_counter + false_negative_counter == 0:
             print("Cannot generate recall because TP + FN = 0")
         else:
             print(f"Recall is TP / (TP + FN) which is {true_pos_counter / (true_pos_counter + false_negative_counter)}")
+            recall = true_pos_counter / (true_pos_counter + false_negative_counter)
+
+        if (precision != 0) and (recall != 0):
+            f1 = 2 * precision * recall / (precision + recall)
+            print(f"F1 score is {f1}")
 
         if create_report:
             report = classification_report(self.y_test, self.y_pred, target_names=['no flood', 'flood'])
@@ -108,7 +117,7 @@ class statistical_model():
 
 
 if __name__ == "__main__":
-    model = statistical_model(data = df_pos_neg, model_type='svm')
+    model = statistical_model(data = df_pos_neg, model_type='xgb')
 
     model.fit_model()
     model.test_model()

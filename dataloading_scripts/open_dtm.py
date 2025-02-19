@@ -7,14 +7,31 @@ import rasterio
 
 file_list = os.listdir('./dtm_data')
 
-def open_dtm(file):
+def open_dtm(file, verbose=False):
     
     dtm_opened = Image.open('./dtm_data/' + file)
     #print(dtm_opened.height, dtm_opened.width)
     arr = np.array(dtm_opened)
     print(arr.shape, 'when opened')
+
+    # Open the TIFF file
+    dataset = rasterio.open("./dtm_data/" + file)
+    if verbose:
+        print("File Name:", dataset.name)
+        print("Width:", dataset.width)
+        print("Height:", dataset.height)
+        print("Number of Bands:", dataset.count)
+        print("Coordinate Reference System:", dataset.crs)
+        print("Bounds:", dataset.bounds)
+        print("Driver:", dataset.driver)
+        print("Data Type:", dataset.dtypes)
+        print("No Data Value:", dataset.nodatavals)
+        pixel_col = np.array([0, 1, 2])
+        pixel_row = np.array([0, 1, 2])
+        lon, lat = dataset.transform * (pixel_col, pixel_row)
+        print("corresponding lat long is:", lon, lat)
     
-    return arr
+    return dataset
     
 def plot():
     dtm_list = []
@@ -44,24 +61,6 @@ def plot():
     
     fig.savefig('./dtm_data/DTMs_visualized.jpg')
 
-
-
-# Open the TIFF file
-with rasterio.open("./dtm_data/maxElevation_Kenya.tif") as dataset:
-    # Access metadata
-    print("File Name:", dataset.name)
-    print("Width:", dataset.width)
-    print("Height:", dataset.height)
-    print("Number of Bands:", dataset.count)
-    print("Coordinate Reference System:", dataset.crs)
-    print("Bounds:", dataset.bounds)
-    print("Driver:", dataset.driver)
-    print("Data Type:", dataset.dtypes)
-    print("No Data Value:", dataset.nodatavals)
-    pixel_col = np.array([0, 1, 2])
-    pixel_row = np.array([0, 1, 2])
-    lon, lat = dataset.transform * (pixel_col, pixel_row)
-    print("corresponding lat long is:", lon, lat)
 
 if __name__ == "__main__":
     plot()
