@@ -67,6 +67,6 @@ def append_flood_observations(target_time_cube, ground_truth_df, verbose=False):
 if __name__ == "__main__":
     target_cube = np.zeros((len(time_era5), len(lat_era5), len(lon_era5)))
     target_cube = append_flood_observations(target_cube, ground_truth_df=gt_kenya)
-    print(f"Target cube has {int(np.sum(target_cube))} observations in total")
+    print(f"Target cube has {int(np.sum(target_cube))} positive flood observations in total")
     print(f"Target cube has dimensions {target_cube.shape}")
 
