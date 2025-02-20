@@ -1,6 +1,7 @@
 from netCDF4 import Dataset
 import itertools
 import numpy as np
+import os
 
 
 """
@@ -8,7 +9,11 @@ This script will open up a netCDF4 file from ERA5 with the variables specificed 
 download_era5.py file.
 """
 
-nc_era5 = Dataset('/Users/alim/Documents/ccai_floods/flood_prediction/data/features/merged_years.nc')
+current_directory = os.getcwd() # get the current working directory
+
+# print(current_directory)
+
+nc_era5 = Dataset(current_directory + '/data/features/merged_years.nc')
 
 lon_era5 = nc_era5.variables['longitude'][:]
 
