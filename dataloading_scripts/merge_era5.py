@@ -16,7 +16,7 @@ datasets = []
 for year in range(1996, 2019):
     file_path = file_path_template.format(year)
     if os.path.exists(file_path):
-        ds = xr.open_dataset(file_path)
+        ds = xr.open_dataset(file_path, engine="netcdf4")
         datasets.append(ds)
     else:
         print(f"File {file_path} not found.")

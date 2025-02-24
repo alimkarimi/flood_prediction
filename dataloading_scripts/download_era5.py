@@ -6,7 +6,17 @@ import cdsapi
 This script is to get ERA5 data. This will be used as predictors for generating flood predictions
 """
 
-years = [str(year) for year in range(1996, 2022)]
+# Define the path where you want to create the new folder
+current_directory = os.getcwd()
+new_folder_path = current_directory + "/flood_prediction/data/features"
+
+# Create the folder (including any missing parent directories)
+os.makedirs(new_folder_path, exist_ok=True)
+
+# Change to a specific directory
+os.chdir(new_folder_path)
+
+years = [str(year) for year in range(1996, 2019)]
 
 c = cdsapi.Client()
 
