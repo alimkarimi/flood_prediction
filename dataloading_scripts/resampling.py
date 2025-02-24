@@ -13,7 +13,7 @@ degrees.
 This program also cleans up some spurious values of the SRTM data.
 """
 
-def resample_dtm(plot=True):
+def resample_dtm(plot=True, save=False):
     # Create list of SRTM dtm files:
     srtm_files_root = '../flood_prediction/data/srtm/'
     srtm_file_list = os.listdir(srtm_files_root)
@@ -45,13 +45,13 @@ def resample_dtm(plot=True):
         # now convert mapped_ns and mapped_e to 1200 x 1200 box.
         mapped_ns_super = mapped_ns * 300 * 4
         mapped_e_super = mapped_e * 300 * 4
-        #print(mapped_ns_super, mapped_ns_super+(1200), mapped_e_super, mapped_e_super+(1200))
+        print(mapped_ns_super, mapped_ns_super+(1200), mapped_e_super, mapped_e_super+(1200))
 
         # open dtm and place dtm data into the right part of the super_arr
         with rasterio.open(srtm_files_root + fn) as dataset:
             
             extent = (dataset.bounds.left, dataset.bounds.right, dataset.bounds.bottom, dataset.bounds.top)
-            #print(extent)
+            #print('extent', extent)
         
             extent_left = np.round(dataset.bounds.left)
             extent_right = np.round(dataset.bounds.right)
@@ -67,6 +67,7 @@ def resample_dtm(plot=True):
             row_max, col_max = dataset.index(lon2, lat2)  # Lower-right corner
 
             window = ((row_min, row_max), (col_min, col_max))
+            #print(window)
             windowed_data = dataset.read(1, window=window)  # Reads only the specified window in the 1st band
             #print(windowed_data.shape)
 
@@ -130,6 +131,9 @@ def resample_dtm(plot=True):
         plt.ylabel('Latitude')
         plt.title('Digital Terrain Model - Downsampled')
         plt.show()
+
+    if save:
+        plt.savefig('./data/resampled_dtm_viz/DTM_resampled_result.jpg')
 
     return resampled_arr
 

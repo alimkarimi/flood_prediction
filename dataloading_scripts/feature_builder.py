@@ -46,7 +46,7 @@ df_neg = createBaseDataFrame()
 np.random.seed(0)
 
 
-def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, append_dtm = True, num_neg_samples = 10000, pos_feature_extraction=True,
+def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, append_dtm = True, num_neg_samples = 1000, pos_feature_extraction=True,
                 ):
     """
 
