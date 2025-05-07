@@ -25,6 +25,8 @@ class statistical_model():
         self.train_ration = 1 - self.test_ratio
         X = data['feature_vector']
         y = data['label'] # these are either 'tp' or 'tn'. use LabelEncoder() to convert them to numerical format
+        print(X.shape, y.shape)
+        print(X[0].shape)
 
         le = LabelEncoder()
         y = le.fit_transform(y)
@@ -117,7 +119,7 @@ class statistical_model():
 
 
 if __name__ == "__main__":
-    model = statistical_model(data = df_pos_neg, model_type='xgb')
+    model = statistical_model(data = df_pos_neg, model_type='rf')
 
     model.fit_model()
     model.test_model()
