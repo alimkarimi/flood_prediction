@@ -13,7 +13,7 @@ degrees.
 This program also cleans up some spurious values of the SRTM data.
 """
 
-def resample_dtm(plot=True, save=False):
+def resample_dtm(plot=False, save=False):
     # Create list of SRTM dtm files:
     srtm_files_root = '../flood_prediction/data/srtm/'
     srtm_file_list = os.listdir(srtm_files_root)
@@ -45,7 +45,7 @@ def resample_dtm(plot=True, save=False):
         # now convert mapped_ns and mapped_e to 1200 x 1200 box.
         mapped_ns_super = mapped_ns * 300 * 4
         mapped_e_super = mapped_e * 300 * 4
-        print(mapped_ns_super, mapped_ns_super+(1200), mapped_e_super, mapped_e_super+(1200))
+        #print(mapped_ns_super, mapped_ns_super+(1200), mapped_e_super, mapped_e_super+(1200))
 
         # open dtm and place dtm data into the right part of the super_arr
         with rasterio.open(srtm_files_root + fn) as dataset:
