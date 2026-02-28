@@ -16,5 +16,8 @@ dataloading_scripts/resampling_old.py
 eda/PCA_scree_plot.jpg
 PCA_true_pos_floods_1996_2018.jpg
 
+models/sen1floods11_Prithvi_100M.pth
+
+
 
 
