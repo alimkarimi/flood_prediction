@@ -5,10 +5,12 @@ from dataloading_scripts.resampling import resample_dtm
 
 from dataloading_scripts.init_db import createBaseDataFrame, appendObservationalData
 
+from time import time
+
 """
 This script will get feature vectors (6d - from ERA5) for all true positives and a sample of true negatives. 
 
-This scrip will also create a 7th dimension, the elevation, from resample_dtm
+This script will also create a 7th dimension, the elevation, from resample_dtm
 
 Currently, the number of negative samples is controlled by the num_neg_samples argument to get_features().
 
@@ -45,7 +47,7 @@ df_neg = createBaseDataFrame()
 np.random.seed(0) # set seed for reproducibility - especially to ensure the same negative flood example indices are repeated.
 
 
-def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, append_dtm = True, num_neg_samples = 1000000, pos_feature_extraction=True,
+def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, append_dtm = True, num_neg_samples = 10000, pos_feature_extraction=True,
                 lag = 3, spatial_window = None):
     """
     To do - incorporate spatial window.
@@ -80,12 +82,13 @@ def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, a
         # choose every negative sample - there will be too many.
         num_neg_indices = true_neg_indices[0].shape[0]
         random_sample_idx = np.random.randint(low=0, high=num_neg_indices, size=num_neg_samples, dtype=int)
-        print('random sample idx', random_sample_idx.shape, random_sample_idx)
+        #print('random sample idx', random_sample_idx.shape, random_sample_idx)
 
         # create empty matrix to hold the time, row, and column indices of the true negatives:
         idx_holder_neg = np.zeros((random_sample_idx.shape[0], 3))
 
         # fill in rows of the idx_holder_neg with time, row, and column indices of true negatives
+        t1 = time()
         for k, idx in enumerate(random_sample_idx):
             temp_t = int(true_neg_indices[0][idx]) # the [0] indexes into the first array in the tuple called true_neg_indices and 
             # the [idx] indexes into the the idx-th element of that array.
@@ -95,18 +98,20 @@ def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, a
             # the [idx] indexes into the the idx-th element of that array.
             idx_holder_neg[k] = [temp_t, temp_row, temp_col] # fill in the k-th row of the k x 3 matrix idx_holder_neg
         print('idx holder', idx_holder_neg, idx_holder_neg.shape)
-
+        t2 = time()
+        print(f"Time taken to fill in idx_holder_neg: {t2 - t1} seconds")
         # get indices where lag would go out of the data cube:
         bool_mask_out_of_bounds = idx_holder_neg[:, 0] < lag # bool_mask holds true/false values. True
         # means that the index is out of bounds. False means that the index is in bounds.
         num_out_of_bounds = np.sum(bool_mask_out_of_bounds) # compute number of sampled true negatives that are out of bounds.
         print(f" removed {num_out_of_bounds} out of bounds samples")
-        print(idx_holder_neg[:, 0] < lag)
+        #print(idx_holder_neg[:, 0] < lag)
 
         # we want to adjust the random_sample_idx to only include those indices that are in bounds.
         random_sample_idx = random_sample_idx[~bool_mask_out_of_bounds] # this will give us the indices of the true negatives that are in bounds.
         # we want to adjust the idx_holder_neg to only include those indices that are in bounds.
         idx_holder_neg = idx_holder_neg[~bool_mask_out_of_bounds] # this will give us the indices of the true negatives that are in bounds.
+        print('this is idx_holder_neg: ', idx_holder_neg)
         print(f"number of samples in idx_holder_neg {idx_holder_neg.shape[0]}")
 
 
@@ -123,6 +128,17 @@ def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, a
         # use those indcies to get the negative features from the ERA5 dataset and save those features row 
         # wise into the obs_matrix_true_neg matrix.
 
+
+        ##### New Loop #####
+        # for feature_idx, predictor in enumerate(predictor_vars):
+
+        #     var_data = nc_era5.variables[predictor] # get the variable data from the nc file
+        #     # get each ERA5 variable's value.
+        #     for l in range(lag):
+
+        ##### End New Loop #####
+
+        t1 = time()
         for n, idx in enumerate(range(idx_holder_neg.shape[0])):
             t_idx, row_idx, col_idx = idx_holder_neg[n]
             for m, predictor in enumerate(predictor_vars):
@@ -143,7 +159,8 @@ def getFeatures(df,target_cube = target_cube, predictor_vars = predictor_vars, a
                     obs_matrix_true_neg[n] = temp_feature_vector.reshape(-1) # reshape so entire observation fits in one row. 
                     #df.at[n, 'feature_vector'] = temp_feature_vector.squeeze()
                     df.at[n, 'feature_vector'] = temp_feature_vector.reshape(-1)
-                    
+        t2 = time()
+        print(f"Time taken to fill in obs_matrix_true_neg: {t2 - t1} seconds")       
 
         return obs_matrix_true_neg, df
 
@@ -209,7 +226,4 @@ print(obs_matrix_all.shape)
 # get 24 true negatives by sampling the 
 if __name__ == "__main__":
     print('In Main.')
-    
-
-
 
