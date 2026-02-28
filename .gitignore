@@ -9,3 +9,12 @@
 data/
 
 notebooks/Sentinel-1
+
+dataloading_scripts/play_w_xarray.py
+dataloading_scripts/resampling_old.py
+
+eda/PCA_scree_plot.jpg
+PCA_true_pos_floods_1996_2018.jpg
+
+
+
